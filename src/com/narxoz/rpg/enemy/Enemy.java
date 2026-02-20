@@ -3,87 +3,96 @@ package com.narxoz.rpg.enemy;
 import com.narxoz.rpg.combat.Ability;
 import com.narxoz.rpg.loot.LootTable;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Base interface for all enemies in the RPG system.
- *
- * Every enemy — from a lowly Goblin to an Ancient Dragon — shares
- * certain characteristics: they have stats, abilities, and loot.
- * But HOW they are created varies dramatically.
- *
- * ============================================================
- * WHY THIS INTERFACE MATTERS FOR DESIGN PATTERNS:
- * ============================================================
- *
- * Builder Pattern:
- *   Complex enemies have many fields (stats, abilities, phases, loot, AI).
- *   The Builder pattern constructs enemies step-by-step instead of
- *   cramming everything into one monstrous constructor.
- *   → Think: Should Enemy be immutable once built? (Hint: YES!)
- *
- * Prototype Pattern:
- *   This interface includes a clone() method. Enemies must be CLONABLE
- *   so we can create variants efficiently:
- *     Base Goblin → Elite Goblin → Goblin Champion → Goblin King
- *   → Think: What needs DEEP copying? What can be SHALLOW copied?
- *
- * Factory Method:
- *   The Builder's build() method IS a factory method — it produces
- *   Enemy objects. Different builders produce different enemy types.
- *
- * Abstract Factory:
- *   Enemy components (abilities, loot) come from themed factories.
- *   A FireComponentFactory guarantees all components match the fire theme.
- *
- * ============================================================
- * YOUR TASKS:
- * ============================================================
- *
- * TODO: Decide — should this be an interface or abstract class?
- *   - Interface: If implementations are very different
- *   - Abstract class: If you want shared fields (name, health, etc.)
- *   Hint: An abstract class with shared stat fields might be cleaner.
- *
- * TODO: Define the core enemy contract.
- *   Every enemy should provide:
- *   - Basic stats (health, damage, defense, speed)
- *   - Abilities they can use
- *   - Loot they drop when defeated
- *   - Information display (for the demo)
- *   - Clone method (for Prototype pattern)
- *
- * TODO: Think about immutability.
- *   - Once built by the Builder, should enemy stats change?
- *   - Should clone() return a mutable or immutable copy?
- *   - How do you allow Prototype to modify cloned stats?
- */
-public interface Enemy {
+public abstract class Enemy {
 
-    // TODO: Define core stat methods
-    // - String getName()
-    // - int getHealth()
-    // - int getDamage()
-    // - int getDefense()
-    // - int getSpeed()
+    protected String name;
+    protected int health;
+    protected int damage;
+    protected int defense;
+    protected int speed;
+    protected String element;
+    protected List<Ability> abilities;
+    protected LootTable lootTable;
+    protected String aiBehavior;
 
-    // TODO: Define ability methods
-    // - List<Ability> getAbilities()
+    protected Enemy() {
+        this.abilities = new ArrayList<>();
+    }
 
-    // TODO: Define loot methods
-    // - LootTable getLootTable()
+    public String getName() {
+        return name;
+    }
 
-    // TODO: Define display method
-    // - void displayInfo()   (shows all stats, abilities, loot)
+    public int getHealth() {
+        return health;
+    }
 
-    // TODO: Define clone method for Prototype pattern
-    // - Enemy clone()
-    //
-    // CRITICAL: This must perform DEEP COPY!
-    // If you do shallow copy, cloned enemies will share ability
-    // and loot references with the original — causing bugs!
-    //
-    // Test your clone: modify the clone's abilities.
-    // Does the original change? If yes → your copy is too shallow!
+    public List<Ability> getAbilities() {
+        return new ArrayList<>(abilities);
+    }
 
+    public LootTable getLootTable() {
+        return lootTable;
+    }
+
+    public String getAiBehavior() {
+        return aiBehavior;
+    }
+
+    public void display() {
+        System.out.println("Enemy: " + name);
+        System.out.println("Health: " + health);
+        System.out.println("Damage: " + damage);
+        System.out.println("Defense: " + defense);
+        System.out.println("Speed: " + speed);
+        System.out.println("Element: " + element);
+        System.out.println("AI: " + aiBehavior);
+        System.out.println("Abilities:");
+        for (Ability a : abilities) {
+            System.out.println(" - " + a.getName());
+        }
+        System.out.println("Loot: " + lootTable.getItems());
+    }
+
+    // PROTOTYPE
+    public abstract Enemy clone();
+
+    protected void addAbilityInternal(Ability ability) {
+        this.abilities.add(ability);
+    }
+
+    protected void setLootTableInternal(LootTable lootTable) {
+        this.lootTable = lootTable;
+    }
+
+    protected void setCoreStatsInternal(String name, int health, int damage,
+                              int defense, int speed,
+                              String element, String aiBehavior) {
+        this.name = name;
+        this.health = health;
+        this.damage = damage;
+        this.defense = defense;
+        this.speed = speed;
+        this.element = element;
+        this.aiBehavior = aiBehavior;
+    }
+
+    // ---------- Prototype helpers ----------
+
+    public void multiplyStats(double multiplier) {
+        this.health = (int) (this.health * multiplier);
+        this.damage = (int) (this.damage * multiplier);
+        this.defense = (int) (this.defense * multiplier);
+    }
+
+    public void setElement(String element) {
+        this.element = element;
+    }
+
+    public void addAbility(Ability ability) {
+        this.abilities.add(ability);
+    }
 }
